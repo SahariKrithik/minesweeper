@@ -1,0 +1,244 @@
+#include<iostream.h>
+#include<stdlib.h>
+#include<stdio.h>
+#include<conio.h>
+
+// OOP implementation of the famous Minesweeper game 
+class Minesweeper
+{
+    private:
+      int x;
+      int y;
+      char realMap[8][8];
+      char playerMap[8][8];
+      int mineLocation[10][2];
+	
+	public:
+	  int isValid(int row, int col);
+	  int isMine(int row, int col, char realMap[][8]);
+	  void printMap(char playerMap[][8]);
+	  int countMinesAround(int row, int col, char realMap[][8]);
+	  void initializeMaps(char realMap[][8], char playerMap[][8]);
+	  void placeMines(int mineLocation[][2], char realMap[][8]);
+	  void moveFromUser(int *x, int *y);
+	  void playMinesweeper();
+	  int minesweeperSubFunction(char playerMap[][8], char realMap[][8], int mineLocation[][2], int row, int col, int *movesRemaining);
+
+};
+
+
+// function to check whether a given cell actually exists
+int Minesweeper::isValid(int row, int col)
+{
+    if((row<8)&&(col<8)&&(row>=0)&&(col>=0))
+      return 1;
+    else
+      return 0;
+}
+
+
+// function to check whether a given cell contains a mine
+int Minesweeper::isMine(int row, int col, char realMap[][8])
+{
+    if(realMap[row][col]=='*')
+      return 1;
+    else
+      return 0;
+}
+
+
+// function to print current map
+void Minesweeper::printMap(char playerMap[][8])
+{
+    cout<<"\n\n\n";
+    cout<<"\t\t\t  ";
+    for(int i=0;i<8;i++)
+      cout<<i<<" ";
+    cout<<"\n";
+    for(i=0;i<8;i++)
+    {
+      cout<<"\t\t\t"<<i<<" ";
+      for(int j=0;j<8;j++)
+	 cout<<playerMap[i][j]<<" ";
+      cout<<"\n";
+    }
+}
+
+
+// function to count number of mines around a given cell
+int Minesweeper::countMinesAround(int row, int col, char realMap[][8])
+{
+    // counter variable
+    int count=0;
+
+    // check whether an adjacent cell actually exists, and check whether it contains a mine
+    if(isValid(row-1,col)==1)    // top
+      if(isMine(row-1,col,realMap)==1)
+	    count++;
+    if(isValid(row+1,col)==1)    // bottom
+      if(isMine(row+1,col,realMap)==1)
+	    count++;
+    if(isValid(row-1,col-1)==1)  // top-left
+      if(isMine(row-1,col-1,realMap)==1)
+	    count++;
+    if(isValid(row+1,col+1)==1)  // bottom-right
+      if(isMine(row+1,col+1,realMap)==1)
+	    count++;
+    if(isValid(row-1,col+1)==1)  // top-right
+      if(isMine(row-1,col+1,realMap)==1)
+	    count++;
+    if(isValid(row+1,col-1)==1)  // bottom-left
+      if(isMine(row+1,col-1,realMap)==1)
+	    count++;
+    if(isValid(row,col+1)==1)    // right
+      if(isMine(row,col+1,realMap)==1)
+	    count++;
+    if(isValid(row,col-1)==1)    // left
+      if(isMine(row,col-1,realMap)==1)
+	    count++;
+
+    return count;
+}
+
+
+// function to initialize maps with empty cells
+void Minesweeper::initializeMaps(char realMap[][8], char playerMap[][8])
+{
+    for(int i=0;i<8;i++)
+      for(int j=0;j<8;j++)
+	realMap[i][j]=playerMap[i][j]='-';
+}
+
+
+// function to randomly place mines on map
+void Minesweeper::placeMines(int mineLocation[][2], char realMap[][8])
+{
+    int done[64];
+    for(int i=0;i<63;i++)
+      done[i]=0;
+    for(i=0;i<10;)
+    {
+	  int randomNum=rand()%64;
+	  int x=randomNum/8;
+	  int y=randomNum%8;
+	  if(done[randomNum]==0)
+	  {
+	    mineLocation[i][0]=x;
+	    mineLocation[i][1]=y;
+	    realMap[mineLocation[i][0]][mineLocation[i][1]]='*';
+	    done[randomNum]=1;
+	    i++;
+	  }
+    }
+}
+
+
+// function to get next move from the user
+void Minesweeper::moveFromUser(int *x, int *y)
+{
+    cout<<"\n\n\tEnter your next move: (row index followed by column index) ";
+    cin>>*x>>*y;
+}
+
+
+// basically "brain" function - does most of the job
+int Minesweeper::minesweeperSubFunction(char playerMap[][8], char realMap[][8], int mineLocation[][2], int row, int col, int *movesRemaining)
+{
+    if(playerMap[row][col]!='-')
+      return 0;
+    if(realMap[row][col]=='*')
+    {
+      playerMap[row][col]='*';
+      for(int i=0;i<10;i++)
+	playerMap[mineLocation[i][0]][mineLocation[i][1]]='*';
+      clrscr();
+      printMap(playerMap);
+      cout<<"\n\nYou lost!\n";
+      return 1;
+    }
+    else
+    {
+      int count=countMinesAround(row,col,realMap);
+      (*movesRemaining)--;
+      playerMap[row][col]=count+'0';
+      if(!count)
+      {
+	  if(isValid(row-1,col)==1)    // top
+	    if(isMine(row-1,col,realMap)==1)
+	      minesweeperSubFunction(playerMap, realMap, mineLocation, row-1, col, movesRemaining);
+	  if(isValid(row+1,col)==1)    // bottom
+	    if(isMine(row+1,col,realMap)==1)
+	      minesweeperSubFunction(playerMap, realMap, mineLocation, row+1, col, movesRemaining);
+	  if(isValid(row-1,col-1)==1)  // top-left
+	    if(isMine(row-1,col-1,realMap)==1)
+	      minesweeperSubFunction(playerMap, realMap, mineLocation, row-1, col-1, movesRemaining);
+	  if(isValid(row+1,col+1)==1)  // bottom-right
+	    if(isMine(row+1,col+1,realMap)==1)
+	      minesweeperSubFunction(playerMap, realMap, mineLocation, row+1, col+1, movesRemaining);
+	  if(isValid(row-1,col+1)==1)  // top-right
+	    if(isMine(row-1,col+1,realMap)==1)
+	      minesweeperSubFunction(playerMap, realMap, mineLocation, row-1, col+1, movesRemaining);
+	  if(isValid(row+1,col-1)==1)  // bottom-left
+	    if(isMine(row+1,col-1,realMap)==1)
+	      minesweeperSubFunction(playerMap, realMap, mineLocation, row+1, col-1, movesRemaining);
+	  if(isValid(row,col+1)==1)    // right
+	    if(isMine(row,col+1,realMap)==1)
+	      minesweeperSubFunction(playerMap, realMap, mineLocation, row, col+1, movesRemaining);
+	  if(isValid(row,col-1)==1)    // left
+	    if(isMine(row,col-1,realMap)==1)
+	      minesweeperSubFunction(playerMap, realMap, mineLocation, row, col-1, movesRemaining);
+      }
+    }
+    return 0;
+}
+
+
+// main function of control
+void Minesweeper::playMinesweeper()
+{
+    int flag=0;  // 0 if game is not lost
+    int movesRemaining=54;
+    initializeMaps(realMap, playerMap);
+    placeMines(mineLocation, realMap);
+    while(flag==0)
+    {
+	  clrscr();
+	  printMap(playerMap);
+	  moveFromUser(&x,&y);
+	  flag=minesweeperSubFunction(playerMap, realMap, mineLocation, x, y, &movesRemaining);
+	  if((flag==0)&&(movesRemaining==0))
+	  {
+	    cout<<"\n\nYou won!\n";
+	    flag=1;
+	  }
+    }
+}
+
+
+// driver function
+int main()
+{
+    clrscr();
+
+    cout<<"\n\nWelcome to Minesweeper!\n\n";
+    cout<<"\nQuick Start:\n";
+    cout<<"You are presented with a board of squares.";
+    cout<<"\nSome squares contain mines (bombs), others don't.\n";
+    cout<<"If you \"clear\" a square containing a bomb, you lose.\n";
+    cout<<"To \"clear\" a square, just enter its co-ordinates.\n";
+    cout<<"If you manage to clear all the squares without clicking on any bombs, you win.\n";
+    cout<<"Clearing a square which doesn\'t have a bomb reveals the number of neighbouring\nsquares containing bombs.\n";
+    cout<<"A square\'s \"neighbours\" are the squares adjacent to it - above, below, left,\nright, and along its diagonals.";
+    cout<<"\nUse this information plus some guess work to avoid the bombs.";
+    cout<<"\nNote that squares on the sides of the board or in a corner have fewer neighbors.\n";
+    // cout<<"If you open a square with 0 neighboring bombs, all its neighbors will automatically open. This can cause a large area to automatically open.\n";
+    cout<<"\nGood Luck!";
+    cout<<"\n\nPress any key to play . . .";
+    getch();
+
+    Minesweeper M;
+    M.playMinesweeper();
+    getch();
+    return 0;
+}
+
