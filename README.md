@@ -1,1 +1,1 @@
-# C++ program for the popular game Minesweeper
+# OOP implementation of the famous Minesweeper game
