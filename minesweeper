@@ -141,7 +141,7 @@ void Minesweeper::moveFromUser(int *x, int *y)
 }
 
 
-// basically "brain" function - does most of the job
+// basically "brain" function - it does most of the job
 int Minesweeper::minesweeperSubFunction(char playerMap[][8], char realMap[][8], int mineLocation[][2], int row, int col, int *movesRemaining)
 {
     if(playerMap[row][col]!='-')
